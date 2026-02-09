@@ -21,7 +21,7 @@ export async function GET(
     `).all(id);
 
     return NextResponse.json({
-      ...order,
+      ...(order as any),
       items: items.map((item: any) => ({
         ...item,
         product: { title: item.title, slug: item.slug },
