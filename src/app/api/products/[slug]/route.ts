@@ -21,7 +21,7 @@ export async function GET(
     const variants = db.prepare('SELECT * FROM product_variants WHERE product_id = ?').all((product as any).id);
 
     return NextResponse.json({
-      ...product,
+      ...(product as any),
       images,
       variants,
     });
