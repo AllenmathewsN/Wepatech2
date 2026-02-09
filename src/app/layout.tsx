@@ -8,7 +8,7 @@ import { Toaster } from 'react-hot-toast';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'PhonePlace - Online Marketplace for Phones & Accessories',
+  title: 'Wepatech - Online Marketplace for Phones & Accessories',
   description: 'Shop the latest smartphones and accessories in Kenya',
 };
 

@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">PhonePlace</h3>
+            <h3 className="font-bold text-lg mb-4">Wepatech</h3>
             <p className="text-gray-400 text-sm">
               Kenya's trusted online marketplace for phones and accessories.
             </p>
@@ -54,7 +54,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-          <p>&copy; 2024 PhonePlace. All rights reserved.</p>
+          <p>&copy; 2024 Wepatech. All rights reserved.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
             <a href="#" className="hover:text-primary">Facebook</a>
             <a href="#" className="hover:text-primary">Twitter</a>

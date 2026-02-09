@@ -45,7 +45,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-2xl font-bold text-primary flex-shrink-0">
-            PhonePlace
+            Wepatech
           </Link>
 
           <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
