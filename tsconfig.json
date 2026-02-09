@@ -9,6 +9,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
+    "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -27,7 +28,8 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "types": []
   },
   "include": [
     "next-env.d.ts",
