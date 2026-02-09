@@ -4,7 +4,7 @@
   "description": "PhonePlace - Online marketplace for phones and accessories",
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/init-db.js && node scripts/seed.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "node scripts/seed.js"
