@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 
-export default function CategoryPage() {
+function CategoryContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -166,5 +166,13 @@ export default function CategoryPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CategoryPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading...</div>}>
+      <CategoryContent />
+    </Suspense>
   );
 }
