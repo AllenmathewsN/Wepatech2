@@ -3,10 +3,11 @@ import db from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(params.id);
+    const { id } = await params;
+    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
@@ -17,7 +18,7 @@ export async function GET(
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       WHERE oi.order_id = ?
-    `).all(params.id);
+    `).all(id);
 
     return NextResponse.json({
       ...order,

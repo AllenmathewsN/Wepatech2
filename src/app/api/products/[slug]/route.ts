@@ -3,14 +3,15 @@ import db from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const product = db.prepare(`
       SELECT p.*
       FROM products p
       WHERE p.slug = ?
-    `).get(params.slug);
+    `).get(slug);
 
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
