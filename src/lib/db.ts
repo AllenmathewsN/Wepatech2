@@ -139,6 +139,10 @@ function initDB() {
 }
 
 function seedDB() {
+  // Check if already seeded
+  const existing = db.prepare('SELECT COUNT(*) as count FROM users').get() as any;
+  if (existing.count > 0) return;
+
   const bcrypt = require('bcryptjs');
   const passwordHash = bcrypt.hashSync('password123', 10);
   
