@@ -9,7 +9,14 @@ export default function Header() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategories, setShowCategories] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, cartCount } = useStore();
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -31,61 +38,68 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="bg-secondary text-white py-2">
-        <div className="container mx-auto px-4 flex justify-between text-sm">
-          <span>🇰🇪 Delivering across Kenya</span>
-          <div className="flex gap-4">
-            <Link href="/help" className="hover:text-primary">Help</Link>
-            <Link href="/track" className="hover:text-primary">Track Order</Link>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg' : 'bg-white'}`}>
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-2.5">
+        <div className="container mx-auto px-4 flex justify-between items-center text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-400">✦</span>
+            <span className="font-medium">Premium Shopping Experience in Kenya</span>
+          </div>
+          <div className="flex gap-6">
+            <Link href="/help" className="hover:text-amber-400 transition-colors">Concierge</Link>
+            <Link href="/track" className="hover:text-amber-400 transition-colors">Track Order</Link>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="text-2xl font-bold text-primary flex-shrink-0">
-            Wepatech
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 bg-clip-text text-transparent flex-shrink-0 hover:scale-105 transition-transform">
+            WEPATECH
           </Link>
 
           <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
-            <div className="relative">
+            <div className="relative group">
               <input
                 type="text"
-                placeholder="Search for phones, accessories..."
+                placeholder="Search premium phones & accessories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2.5 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-6 py-3.5 pr-14 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-300 group-hover:border-amber-300"
               />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-white px-4 py-1.5 rounded">
-                Search
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </button>
             </div>
           </form>
 
           <div className="flex items-center gap-6 flex-shrink-0">
             {user ? (
-              <Link href="/account" className="flex items-center gap-2 hover:text-primary">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span className="text-sm">{user.name}</span>
+              <Link href="/account" className="flex items-center gap-2 hover:text-amber-600 transition-colors group">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-semibold shadow-lg group-hover:shadow-xl transition-all">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <span className="text-sm font-medium hidden lg:block">{user.name}</span>
               </Link>
             ) : (
-              <Link href="/login" className="flex items-center gap-2 hover:text-primary">
+              <Link href="/login" className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span className="text-sm">Account</span>
+                <span className="text-sm font-medium hidden lg:block">Sign In</span>
               </Link>
             )}
 
-            <Link href="/cart" className="relative hover:text-primary">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+            <Link href="/cart" className="relative group">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center group-hover:shadow-lg transition-all">
+                <svg className="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-scale-in">
                   {cartCount}
                 </span>
               )}
@@ -94,40 +108,46 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="border-t">
+      <div className="border-t border-gray-100">
         <div className="container mx-auto px-4">
-          <nav className="flex items-center gap-8 py-3 text-sm">
+          <nav className="flex items-center gap-8 py-3 text-sm font-medium">
             <div className="relative">
               <button
                 onMouseEnter={() => setShowCategories(true)}
                 onMouseLeave={() => setShowCategories(false)}
-                className="flex items-center gap-2 font-medium hover:text-primary"
+                className="flex items-center gap-2 hover:text-amber-600 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
-                Categories
+                Collections
               </button>
               
               {showCategories && (
                 <div
                   onMouseEnter={() => setShowCategories(true)}
                   onMouseLeave={() => setShowCategories(false)}
-                  className="absolute top-full left-0 bg-white shadow-lg rounded-b-lg w-64 py-2 mt-1"
+                  className="absolute top-full left-0 bg-white shadow-2xl rounded-xl w-72 py-3 mt-2 border border-gray-100 animate-slide-up"
                 >
-                  <Link href="/c/smartphones" className="block px-4 py-2 hover:bg-gray-50">📱 Smartphones</Link>
-                  <Link href="/c/accessories" className="block px-4 py-2 hover:bg-gray-50">🎧 Phone Accessories</Link>
-                  <Link href="/c/chargers-cables" className="block px-4 py-2 hover:bg-gray-50 pl-8">⚡ Chargers & Cables</Link>
-                  <Link href="/c/earphones" className="block px-4 py-2 hover:bg-gray-50 pl-8">🎵 Earphones</Link>
-                  <Link href="/c/power-banks" className="block px-4 py-2 hover:bg-gray-50 pl-8">🔋 Power Banks</Link>
-                  <Link href="/c/phone-cases" className="block px-4 py-2 hover:bg-gray-50 pl-8">📦 Phone Cases</Link>
+                  <Link href="/c/smartphones" className="block px-6 py-3 hover:bg-amber-50 transition-colors">
+                    <div className="font-semibold text-gray-900">📱 Premium Smartphones</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Flagship devices</div>
+                  </Link>
+                  <Link href="/c/accessories" className="block px-6 py-3 hover:bg-amber-50 transition-colors">
+                    <div className="font-semibold text-gray-900">🎧 Luxury Accessories</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Premium audio & more</div>
+                  </Link>
+                  <Link href="/c/chargers-cables" className="block px-6 py-3 hover:bg-amber-50 transition-colors">
+                    <div className="font-semibold text-gray-900">⚡ Power Solutions</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Fast charging essentials</div>
+                  </Link>
                 </div>
               )}
             </div>
             
-            <Link href="/deals" className="hover:text-primary font-medium">🔥 Deals</Link>
-            <Link href="/flash-sales" className="hover:text-primary font-medium">⚡ Flash Sales</Link>
-            <Link href="/new-arrivals" className="hover:text-primary font-medium">✨ New Arrivals</Link>
+            <Link href="/deals" className="hover:text-amber-600 transition-colors">Exclusive Offers</Link>
+            <Link href="/flash-sales" className="hover:text-amber-600 transition-colors">Limited Editions</Link>
+            <Link href="/new-arrivals" className="hover:text-amber-600 transition-colors">New Arrivals</Link>
           </nav>
         </div>
       </div>
