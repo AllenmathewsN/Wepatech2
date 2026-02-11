@@ -1,9 +1,25 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import fs from 'fs';
 
-const db = new Database(path.join(process.cwd(), 'phoneplace.db'));
+const dbPath = '/tmp/phoneplace.db';
+let db: any = null;
 
-export function initDB() {
+export function getDB() {
+  if (db) return db;
+
+  const dbExists = fs.existsSync(dbPath);
+  db = new Database(dbPath);
+
+  if (!dbExists) {
+    initDB();
+    seedDB();
+  }
+
+  return db;
+}
+
+function initDB() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,8 +34,7 @@ export function initDB() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       slug TEXT UNIQUE NOT NULL,
-      parent_id INTEGER,
-      FOREIGN KEY (parent_id) REFERENCES categories(id)
+      parent_id INTEGER
     );
 
     CREATE TABLE IF NOT EXISTS products (
@@ -35,16 +50,14 @@ export function initDB() {
       rating_avg REAL DEFAULT 0,
       rating_count INTEGER DEFAULT 0,
       category_id INTEGER,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (category_id) REFERENCES categories(id)
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS product_images (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       product_id INTEGER NOT NULL,
       url TEXT NOT NULL,
-      is_primary INTEGER DEFAULT 0,
-      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+      is_primary INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS product_variants (
@@ -55,16 +68,14 @@ export function initDB() {
       size TEXT,
       sku TEXT UNIQUE,
       stock INTEGER DEFAULT 0,
-      price_override REAL,
-      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+      price_override REAL
     );
 
     CREATE TABLE IF NOT EXISTS carts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER,
       session_id TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS cart_items (
@@ -72,10 +83,7 @@ export function initDB() {
       cart_id INTEGER NOT NULL,
       product_id INTEGER NOT NULL,
       variant_id INTEGER,
-      qty INTEGER DEFAULT 1,
-      FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
-      FOREIGN KEY (product_id) REFERENCES products(id),
-      FOREIGN KEY (variant_id) REFERENCES product_variants(id)
+      qty INTEGER DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS orders (
@@ -86,8 +94,7 @@ export function initDB() {
       delivery_fee REAL DEFAULT 0,
       address_json TEXT NOT NULL,
       payment_method TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS order_items (
@@ -96,10 +103,7 @@ export function initDB() {
       product_id INTEGER NOT NULL,
       variant_id INTEGER,
       qty INTEGER NOT NULL,
-      price_at_purchase REAL NOT NULL,
-      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-      FOREIGN KEY (product_id) REFERENCES products(id),
-      FOREIGN KEY (variant_id) REFERENCES product_variants(id)
+      price_at_purchase REAL NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS reviews (
@@ -108,9 +112,7 @@ export function initDB() {
       user_id INTEGER NOT NULL,
       rating INTEGER NOT NULL,
       comment TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS addresses (
@@ -120,8 +122,7 @@ export function initDB() {
       phone TEXT NOT NULL,
       address_line TEXT NOT NULL,
       city TEXT NOT NULL,
-      is_default INTEGER DEFAULT 0,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      is_default INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS wishlist (
@@ -129,16 +130,45 @@ export function initDB() {
       user_id INTEGER NOT NULL,
       product_id INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
       UNIQUE(user_id, product_id)
     );
 
     CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
     CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
-    CREATE INDEX IF NOT EXISTS idx_cart_items_cart ON cart_items(cart_id);
-    CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
   `);
 }
 
-export default db;
+function seedDB() {
+  const bcrypt = require('bcryptjs');
+  const passwordHash = bcrypt.hashSync('password123', 10);
+  
+  db.prepare('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)').run(
+    'Admin User', 'admin@phoneplace.com', passwordHash, 'admin'
+  );
+
+  const categories = [
+    { name: 'Smartphones', slug: 'smartphones', parent_id: null },
+    { name: 'Phone Accessories', slug: 'accessories', parent_id: null },
+  ];
+
+  categories.forEach(cat => {
+    db.prepare('INSERT INTO categories (name, slug, parent_id) VALUES (?, ?, ?)').run(
+      cat.name, cat.slug, cat.parent_id
+    );
+  });
+
+  const products = [
+    { title: 'iPhone 15 Pro Max', slug: 'iphone-15-pro-max', price: 185000, discount: 8, brand: 'Apple', stock: 18, rating_avg: 4.9, rating_count: 203, category_id: 1 },
+    { title: 'Samsung Galaxy S23 Ultra', slug: 'samsung-s23-ultra', price: 145000, discount: 15, brand: 'Samsung', stock: 25, rating_avg: 4.8, rating_count: 156, category_id: 1 },
+    { title: 'Xiaomi Redmi Note 13 Pro', slug: 'xiaomi-redmi-note-13', price: 35000, discount: 18, brand: 'Xiaomi', stock: 55, rating_avg: 4.6, rating_count: 178, category_id: 1 },
+  ];
+
+  products.forEach(p => {
+    const result = db.prepare('INSERT INTO products (title, slug, price, discount, brand, stock, rating_avg, rating_count, category_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+      p.title, p.slug, p.price, p.discount, p.brand, p.stock, p.rating_avg, p.rating_count, p.category_id
+    );
+    db.prepare('INSERT INTO product_images (product_id, url, is_primary) VALUES (?, ?, ?)').run(result.lastInsertRowid, `/images/${p.slug}.jpg`, 1);
+  });
+}
+
+export default getDB();
